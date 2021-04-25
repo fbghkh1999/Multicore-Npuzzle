@@ -256,7 +256,7 @@ void IDAStar(char* puzzle, char dir){
 
 
 void shuffle_array(char arr[], int n) { //from : https://www.geeksforgeeks.org/shuffle-an-array-using-stl-in-c/
-    / To obtain a time-based seed 
+    // To obtain a time-based seed 
     // unsigned seed = chrono::system_clock::now().time_since_epoch().count(); 
     // // Shuffling our array 
     // shuffle(arr, arr + n, default_random_engine(seed)); 
