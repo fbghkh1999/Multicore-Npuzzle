@@ -50,12 +50,14 @@ struct Node {
 void MakeMovableTable(int size){
 	int moves[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
 	int board[4][4];
+	#pragma omp parallel for schedule(dynamic,1) collapse(2)
 	for(int y = 0; y<size; ++y){
 		for(int x = 0; x<size; ++x){
 			board[y][x] = x+y*size;
 		}
 	}
 	int dx, dy, j;
+	#pragma omp parallel for schedule(dynamic,1) collapse(3)
 	for(int y = 0; y<size; ++y){
 		for(int x = 0; x<size; ++x){
 			for(int i = 0; i<4; ++i){
@@ -74,6 +76,7 @@ void MakeMovableTable(int size){
 }
 
 void MakeMDTable(int size){
+	
 	for(int y = 0, i = 1; y<size*size; ++y, (++i)%(size*size)){
 		for(int x = 0; x < size * size; ++x){
 			if(i == 0){
@@ -114,12 +117,16 @@ char GetManhattan(char* puzzle){
 	int i, j, x, md = 0;
 	int k, n;
 	int temp[4];
-
+    //#pragma omp for
 	for(i = 0; i < Size*Size; ++i){
 		md += mdTable[puzzle[i]][i];
 	}
-	for (i = 0, x = 1; i<Size; ++i, ++x){
+   
+	x=1;
+	//#pragma omp for
+	for (i = 0; i<Size; ++i){
 		k = 0;
+		//#pragma omp parallel for
 		for (j = 0; j<Size; ++j){
 			n = puzzle[i*Size+j];
 			if (n <= Size*x && n>Size*(x-1)){
@@ -127,7 +134,10 @@ char GetManhattan(char* puzzle){
 			}
 		}
 		md = GetDistance(temp, md, k);
+		x+=1;
 	}
+	
+	
 	for (i = 0, x = 1; i < Size; ++i, ++x){
 		k = 0;
 		for (j = 0; j < Size; ++j){
@@ -142,6 +152,7 @@ char GetManhattan(char* puzzle){
 } 
 
 char GetBlank(char *puzzle){
+	
 	for(int i = 0; i < Size * Size; ++i){
 		if (puzzle[i] == 0)
 		{
@@ -151,6 +162,7 @@ char GetBlank(char *puzzle){
 }
 
 void PrintPath(char depth){
+	#pragma omp for
 	for(int i = 0; i < depth; ++i){
 		printf("%2d  ",path[i]);
 		if((i + 1) % 10 == 0) 
@@ -160,6 +172,7 @@ void PrintPath(char depth){
 }
 
 void PrintPuzzle(char* puzzle){
+    //#pragma omp for
 	for(int i = 0; i < Size; ++i){
 		for(int j = 0; j < Size; ++j){
 			printf("%2d ", puzzle[i * Size + j]);
@@ -184,6 +197,7 @@ char IdaStar(char depth, char maxDepth, char* puzzle, char lastMove, char blank)
 	}
 
 	min = 127;
+	
 	for (int move = 0; move < 4; ++move){
 		if(lastMove == -1 || (move + lastMove) % 4 != 1){
 			char newBlank = movableTable[blank][move];
@@ -231,9 +245,10 @@ void IDAStar(char* puzzle){
       printf("Depth = %d, Node Count = %10u, Total Count = %10u, time = %6.2f msecs\n",h, nodeCount, totalCount, (end-start)/1000.);
       // printf("depth %d",depth);
       if (isSolved){
-        printf("Total Node Count = %u, shortest path length = %d, time = %.2f msecs\n",totalCount, depth, (end-start)/1000.);
+        printf("Solved,Total Node Count = %u, shortest path length = %d, time = %.2f msecs\n",totalCount, depth, (end-start)/1000.);
         // return;
         flag = false;
+		i=30;
         
       }
       h = depth;

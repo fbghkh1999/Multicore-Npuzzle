@@ -67,12 +67,14 @@ void MakeDirections(){
 void MakeMovableTable(int size){
 	int moves[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
 	int board[5][5];
+	#pragma omp parallel for schedule(dynamic,1) collapse(2)
 	for(int y = 0; y < size; ++y){
 		for(int x = 0; x < size; ++x){
 			board[y][x] = x + y * size;
 		}
 	}
 	int dx, dy, j;
+	#pragma omp parallel for schedule(dynamic,1) collapse(3)
 	for(int y = 0; y < size; ++y){
 		for(int x = 0; x < size; ++x){
 			for(int i = 0; i < 4; ++i){
@@ -91,6 +93,7 @@ void MakeMovableTable(int size){
 }
 
 void MakeMDTable(int size){
+	
 	for(int y = 0, i = 1; y < size * size; ++y, (++i) % (size * size)){
 		for(int x = 0; x < size * size; ++x){
 			if(i == 0){
