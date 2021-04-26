@@ -252,6 +252,7 @@ void IDAStar(char* puzzle, char dir){
 		if (isSolved){
 			printf("Total Node Count = %u, shortest path length = %d, time = %.2f seconds\n",totalCount, depth, (end - start) / 1000.);
 			// return;
+			i=30;
 		}
 		depth += 2;
 	}
