@@ -31,6 +31,7 @@ struct Node {
 	char f, g, move;
 
 	Node(char* bd, char blk, char move, ui id, ui parent, char f = 0, char g = 0){
+		//#pragma omp parallel for schedule(dynamic,1)
 		for (int i= 0; i<Size*Size; ++i){
 			board[i]= bd[i];
 		}
@@ -50,14 +51,14 @@ struct Node {
 void MakeMovableTable(int size){
 	int moves[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
 	int board[4][4];
-	#pragma omp parallel for schedule(dynamic,1) collapse(2)
+	//#pragma omp parallel for schedule(dynamic,1) collapse(2)
 	for(int y = 0; y<size; ++y){
 		for(int x = 0; x<size; ++x){
 			board[y][x] = x+y*size;
 		}
 	}
 	int dx, dy, j;
-	#pragma omp parallel for schedule(dynamic,1) collapse(3)
+	//#pragma omp parallel for schedule(dynamic,1) collapse(3)
 	for(int y = 0; y<size; ++y){
 		for(int x = 0; x<size; ++x){
 			for(int i = 0; i<4; ++i){
@@ -76,8 +77,9 @@ void MakeMovableTable(int size){
 }
 
 void MakeMDTable(int size){
-	
-	for(int y = 0, i = 1; y<size*size; ++y, (++i)%(size*size)){
+	int i=1;
+	//#pragma omp parallel for schedule(dynamic,2) collapse(2)
+		for(int y=0;y<size*size;y=y+1){
 		for(int x = 0; x < size * size; ++x){
 			if(i == 0){
 				mdTable[i][x] = 0;
@@ -86,7 +88,9 @@ void MakeMDTable(int size){
 				mdTable[i][x] = abs((y / size) - (x / size)) + abs((y % size) - (x % size));
 			}
 		}
-	}
+		i=(i+1)%(size*size);
+		}
+	
 }
 
 char GetDistance(int *row, char md, int nums){
@@ -117,7 +121,7 @@ char GetManhattan(char* puzzle){
 	int i, j, x, md = 0;
 	int k, n;
 	int temp[4];
-    //#pragma omp for
+   //#pragma omp for schedule(dynamic,2)
 	for(i = 0; i < Size*Size; ++i){
 		md += mdTable[puzzle[i]][i];
 	}
@@ -162,7 +166,7 @@ char GetBlank(char *puzzle){
 }
 
 void PrintPath(char depth){
-	#pragma omp for
+	//#pragma omp for schedule(dynamic,2)
 	for(int i = 0; i < depth; ++i){
 		printf("%2d  ",path[i]);
 		if((i + 1) % 10 == 0) 
@@ -172,7 +176,7 @@ void PrintPath(char depth){
 }
 
 void PrintPuzzle(char* puzzle){
-    //#pragma omp for
+   // #pragma omp for schedule(dynamic,2)
 	for(int i = 0; i < Size; ++i){
 		for(int j = 0; j < Size; ++j){
 			printf("%2d ", puzzle[i * Size + j]);
@@ -232,7 +236,7 @@ void IDAStar(char* puzzle){
 	h = GetManhattan(puzzle);
 	depth = h;
 	start = clock();
-	// while (true){
+	
 
   #pragma omp parallel for
   
@@ -252,8 +256,8 @@ void IDAStar(char* puzzle){
         
       }
       h = depth;
-    }
-}
+	}}
+
 
 void ShuffleArray(char arr[], int n) { //from : https://www.geeksforgeeks.org/shuffle-an-array-using-stl-in-c/
 	 // // To obtain a time-based seed 
@@ -276,6 +280,47 @@ void ShuffleArray(char arr[], int n) { //from : https://www.geeksforgeeks.org/sh
     arr[13] = 15;
     arr[14] = 0;
     arr[15] = 8;
+
+	////////////////////////////////////////
+	// arr[0] = 1;
+    // arr[1] = 5;
+    // arr[2] = 2;
+    // arr[3] = 4;
+    // arr[4] = 3;
+    // arr[5] = 0;
+    // arr[6] = 6;
+    // arr[7] = 7;
+    // arr[8] = 8;
+    // arr[9] = 9;
+    // arr[10] = 10;
+    // arr[11] = 11;
+    // arr[12] = 12;
+    // arr[13] = 13;
+    // arr[14] = 14;
+    // arr[15] = 15;
+	////////////////////////////////////////////////////////
+	// arr[0] = 1;
+    // arr[1] = 2;
+    // arr[2] = 0;
+    // arr[3] = 4;
+    // arr[4] = 13;
+    // arr[5] = 5;
+    // arr[6] = 0;
+    // arr[7] = 6;
+    // arr[8] = 12;
+    // arr[9] = 11;
+    // arr[10] = 9;
+    // arr[11] = 7;
+    // arr[12] = 10;
+    // arr[13] = 8;
+    // arr[14] = 14;
+    // arr[15] = 15;
+
+/////////////////////////////////////////////////////
+
+
+
+
 }
 
 int* ToIntArr(char * c , int s){
